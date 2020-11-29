@@ -14,6 +14,7 @@ from flask_wtf import Form
 from forms import *
 from flask_migrate import Migrate
 from sqlalchemy import func
+from datetime import datetime
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -72,13 +73,13 @@ class Artist(db.Model):
 class Show(db.Model):
     __tablename__ = 'Show'
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.DateTime, nullable=False)
+    start_time = db.Column(db.DateTime, nullable=False)
     artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id', ondelete="cascade"), nullable = False)
     artist = db.relationship("Artist", backref=db.backref("artist", uselist=False))
     venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id', ondelete="cascade"), nullable = False)
     venue = db.relationship("Venue", backref=db.backref("venue", uselist=False))
     def __repr__(self):
-      return f'<Show {self.id} {self.date} {self.artist_id} {self.venue_id}>'
+      return f'<Show {self.id} {self.start_time} {self.artist_id} {self.venue_id}>'
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -104,7 +105,7 @@ def index():
 
 #  Venues
 #  ----------------------------------------------------------------
-Venue.query.delete()
+'''Venue.query.delete()
 venue = Venue(
     name= "The Musical Hop",
     genres = ["Jazz", "Reggae", "Swing", "Classical", "Folk"], 
@@ -147,7 +148,7 @@ venue3 = Venue(
 db.session.add(venue)
 db.session.add(venue2)
 db.session.add(venue3)
-db.session.commit()
+db.session.commit()'''
 
 
 @app.route('/venues')
@@ -208,7 +209,20 @@ def create_venue_form():
 def create_venue_submission():
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
-
+  newCreatedVenue = Venue(
+    name= request.form['name'],
+    genres= request.form.getlist('genres'),
+    address= request.form['address'],
+    city= request.form['city'],
+    state= request.form['state'],
+    phone= request.form['phone'],
+    website= "",
+    facebook_link= request.form['facebook_link'],
+    seeking_talent= False,
+    image_link= ""
+  )
+  db.session.add(newCreatedVenue)
+  db.session.commit()
   # on successful db insert, flash success
   flash('Venue ' + request.form['name'] + ' was successfully listed!')
   # TODO: on unsuccessful db insert, flash an error instead.
@@ -223,14 +237,13 @@ def delete_venue(venue_id):
   venueToDelete = Venue.query.get(venue_id)
   db.session.delete(venueToDelete)
   db.session.commit()
-  print("Successfully deleted a venue")
   # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
   # clicking that button delete it from the db then redirect the user to the homepage
   return None
 
 #  Artists
 #  ----------------------------------------------------------------
-Artist.query.delete()
+'''Artist.query.delete()
 artist = Artist(
     name= "Guns N Petals",
     genres= ["Rock n Roll"],
@@ -269,7 +282,7 @@ artist3 = Artist(
 db.session.add(artist)
 db.session.add(artist2)
 db.session.add(artist3)
-db.session.commit()
+db.session.commit()'''
 
 
 @app.route('/artists')
@@ -364,7 +377,20 @@ def create_artist_submission():
   # called upon submitting the new artist listing form
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
-
+  newCreatedArtist = Artist(
+    name= request.form['name'],
+    city= request.form['city'],
+    state= request.form['state'],
+    phone= request.form['phone'],
+    genres= request.form.getlist('genres'),
+    image_link= "",
+    facebook_link= request.form['facebook_link'],
+    seeking_venue= False,
+    seeking_description="",
+    website= ""
+  )
+  db.session.add(newCreatedArtist)
+  db.session.commit()
   # on successful db insert, flash success
   flash('Artist ' + request.form['name'] + ' was successfully listed!')
   # TODO: on unsuccessful db insert, flash an error instead.
@@ -380,7 +406,10 @@ def shows():
   # displays list of shows at /shows
   # TODO: replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
+  data  = Show.query.join(Artist, Show.artist_id==Artist.id).join(Venue, Show.venue_id==Venue.id).all()
+  for d in data:
+    d.start_time = d.start_time.isoformat()
+  '''data=[{
     "venue_id": 1,
     "venue_name": "The Musical Hop",
     "artist_id": 4,
@@ -415,7 +444,7 @@ def shows():
     "artist_name": "The Wild Sax Band",
     "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
     "start_time": "2035-04-15T20:00:00.000Z"
-  }]
+  }]'''
   return render_template('pages/shows.html', shows=data)
 
 @app.route('/shows/create')
@@ -428,7 +457,13 @@ def create_shows():
 def create_show_submission():
   # called to create new shows in the db, upon submitting new show listing form
   # TODO: insert form data as a new Show record in the db, instead
-
+  newShow = Show(
+    venue_id=request.form['venue_id'],
+    artist_id=request.form['artist_id'],
+    start_time=request.form['start_time']
+  )
+  db.session.add(newShow)
+  db.session.commit()
   # on successful db insert, flash success
   flash('Show was successfully listed!')
   # TODO: on unsuccessful db insert, flash an error instead.
