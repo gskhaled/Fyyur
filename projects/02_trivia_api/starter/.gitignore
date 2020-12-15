@@ -3,6 +3,7 @@ __pycache__
 venv
 triviaenv
 frontend/node_modules/
+.pylintrc
 
 # OS generated files #
 ######################

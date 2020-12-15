@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/alt-text */
 import React, { Component } from 'react';
 
 import '../stylesheets/App.css';
@@ -141,7 +142,7 @@ class QuestionView extends Component {
               key={q.id}
               question={q.question}
               answer={q.answer}
-              category={this.state.categories[q.category]} 
+              category={this.state.categories[q.category - 1]} 
               difficulty={q.difficulty}
               questionAction={this.questionAction(q.id)}
             />
