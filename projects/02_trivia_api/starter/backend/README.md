@@ -72,9 +72,11 @@ This README is missing documentation of your endpoints. Below is an example for 
 
 Endpoints
 GET '/categories'
-GET ...
-POST ...
-DELETE ...
+GET '/questions?page=<page number>'
+GET '/categories/<category id>/questions'
+POST '/questions'
+POST '/quizzes'
+DELETE '/questions'
 
 GET '/categories'
 - Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
@@ -86,6 +88,88 @@ GET '/categories'
 '4' : "History",
 '5' : "Entertainment",
 '6' : "Sports"}
+
+GET '/questions'
+- Fetches a JSON of questions which are in the database
+- Request Arguments: Page
+- Returns: A JSON object with 4 keys: total_questions: the number of resulting questions from the query, questions: a list of question objects with question text, answer, id, category and difficulty, current_category: set to '' for now, categories: the available categories (same as GET /categories). 
+{
+    'total_questions': 1,
+    'questions': [{ 'question':'Test question?', 'answer': 'Test answer', 'category': 1, 'difficulty': 1, 'id': 1}],
+    'current_category': '',
+    'categories': {'1' : "Science",
+                    '2' : "Art",
+                    '3' : "Geography",
+                    '4' : "History",
+                    '5' : "Entertainment",
+                    '6' : "Sports"
+    }
+}
+
+GET '/categories/<category id>/questions'
+- Fetches a JSON of questions which are in the database with the given Category ID
+- Request Arguments: Category ID
+- Returns: A JSON object with 3 keys: total_questions  (the number of resulting questions from the query), questions (a list of question objects with question text, answer, id, category and difficulty), current_category (set to the category type).
+{
+    'total_questions': 1,
+    'questions': [{ 'question':'Test question?', 'answer': 'Test answer', 'category': 1, 'difficulty': 1, 'id': 1}],
+    'current_category': 'Science'
+}
+
+
+POST '/questions'
+- Could search for a question or add a new question
+- Request Arguments: None
+- Returns: Could either return a JSON object of 2 keys (in case of adding a new question): success (if the new question was added successfully) and question (id of the question added) or a JSON object of 3 keys (in case of searching for a question): total_questions (the number of resulting questions from the query), questions (a list of question objects with question text, answer, id, category and difficulty), current_category (set to '' for now).
+REQUEST BODY: 
+{
+    'searchTerm': 'term'
+}
+OR
+{
+    'question':'Test question?', 
+    'answer': 'Test answer', 
+    'category': 1, 
+    'difficulty': 1
+}
+RESPONSE:
+{
+    'total_questions': 1,
+    'questions': [{ 'question':'Test question?', 'answer': 'Test answer', 'category': 1, 'difficulty': 1, 'id': 1}],
+    'current_category': ''
+}
+OR
+{
+    'success': True,
+    'question': 1
+}
+
+POST '/quizzes'
+- Searches for a question to ask in the quiz
+- Request Arguments: None
+- Returns:  a JSON object of a question (question text, answer, id, category and difficulty).
+REQUEST BODY: 
+{
+    'quiz_category': { 'id':1, 'type':'Science'},
+    'previous_questions': []
+}
+RESPONSE:
+{
+    'question':'Test question?', 
+    'answer': 'Test answer', 
+    'category': 1, 
+    'difficulty': 1, 
+    'id': 1
+}
+
+DELETE '/questions'
+- Fetches a JSON of questions which are in the database
+- Request Arguments: Question ID
+- Returns: A JSON object with 2 keys: success and deleted (which is the ID of the deleted question).
+{
+    'success': True
+    'deleted': 1
+}
 
 ```
 

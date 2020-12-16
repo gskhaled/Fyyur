@@ -33,7 +33,7 @@ def create_app(test_config=None):
   Create an endpoint to handle GET requests 
   for all available categories.
   '''
-  @app.route('/categories')
+  @app.route('/categories', methods=['GET'])
   def categories():
     categories  = Category.query.all()
     dictionary = {c.id: c.type for c in categories}
@@ -86,8 +86,8 @@ def create_app(test_config=None):
     try:
       questionToDelete.delete()
       return jsonify({
-      'success': True,
-      'deleted': question_id
+        'success': True,
+        'deleted': question_id
       })
     except:
       abort(404)
@@ -149,7 +149,7 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
-  @app.route('/categories/<category_id>/questions')
+  @app.route('/categories/<category_id>/questions', methods=['GET'])
   def get_by_category(category_id):
     category_id = str(int(category_id) + 1)
     page = request.args.get('page', 1, type=int)
