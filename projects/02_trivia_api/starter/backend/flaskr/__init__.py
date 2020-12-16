@@ -129,11 +129,14 @@ def create_app(test_config=None):
     answer = body.get('answer', None)
     category = body.get('category', None)
     difficulty = body.get('difficulty', None)
+    if(questionText is None or answer is None):
+      abort(400)
     try:
       question = Question(question=questionText, answer=answer, category=category, difficulty=difficulty)
       question.insert()
       return jsonify({
-        'success': True
+        'success': True,
+        'question': question.id
       })
     except:
       abort(422)
