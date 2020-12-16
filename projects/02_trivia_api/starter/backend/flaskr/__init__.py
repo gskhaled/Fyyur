@@ -36,9 +36,9 @@ def create_app(test_config=None):
   @app.route('/categories')
   def categories():
     categories  = Category.query.all()
-    formattedCategories = [c.type for c in categories]
+    dictionary = {c.id: c.type for c in categories}
     return jsonify({
-      'categories': formattedCategories
+      'categories': dictionary
     })
 
 
@@ -86,7 +86,8 @@ def create_app(test_config=None):
     try:
       questionToDelete.delete()
       return jsonify({
-      'success': True
+      'success': True,
+      'deleted': question_id
       })
     except:
       abort(404)
@@ -101,9 +102,29 @@ def create_app(test_config=None):
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.  
   '''
-  @app.route('/question', methods=['POST'])
-  def create_question():
+  '''
+  @TODO: 
+  Create a POST endpoint to get questions based on a search term. 
+  It should return any questions for whom the search term 
+  is a substring of the question. 
+
+  TEST: Search by any phrase. The questions list will update to include 
+  only question that include that string within their question. 
+  Try using the word "title" to start. 
+  '''
+  
+  @app.route('/questions', methods=['POST'])
+  def questions():
     body = request.get_json()
+    searchTerm = body.get('searchTerm', None)
+    if(searchTerm is not None):
+      searchResults = Question.query.filter(func.lower(Question.question).contains(func.lower(searchTerm))).all()
+      formattedQuestions = [question.format() for question in searchResults]
+      return jsonify({
+        'questions': formattedQuestions,
+        'total_questions': len(formattedQuestions),
+        'current_category': ''
+      })
     questionText = body.get('question', None)
     answer = body.get('answer', None)
     category = body.get('category', None)
@@ -116,28 +137,6 @@ def create_app(test_config=None):
       })
     except:
       abort(422)
-
-  '''
-  @TODO: 
-  Create a POST endpoint to get questions based on a search term. 
-  It should return any questions for whom the search term 
-  is a substring of the question. 
-
-  TEST: Search by any phrase. The questions list will update to include 
-  only question that include that string within their question. 
-  Try using the word "title" to start. 
-  '''
-  @app.route('/questions', methods=['POST'])
-  def search_questions():
-    body = request.get_json()
-    searchTerm = body.get('searchTerm', None)
-    searchResults = Question.query.filter(func.lower(Question.question).contains(func.lower(searchTerm))).all()
-    formattedQuestions = [question.format() for question in searchResults]
-    return jsonify({
-      'questions': formattedQuestions,
-      'total_questions': len(formattedQuestions),
-      'current_category': ''
-    })
 
   '''
   @TODO: 
@@ -189,7 +188,7 @@ def create_app(test_config=None):
     if(quizCategory['id'] == 0):
       questions = Question.query.all()
     else:
-      questions = Question.query.filter(quizCategory['id'] == Question.category).all()
+      questions = Question.query.filter(Question.category == quizCategory['id']).all()
     #print("QUESTIONNNNSSSSSS: ", questions)
     formattedQuestions = [question.format() for question in questions]
     #print("FORMATTED QUESTIONSSSS: ", formattedQuestions, len(formattedQuestions))
@@ -199,7 +198,7 @@ def create_app(test_config=None):
       })
     randomIndex = random.randint(0, len(formattedQuestions) - 1)
     while(formattedQuestions[randomIndex]['question'] in previousQuestions):
-      randomIndex = random.randint(0, len(formattedQuestions))
+      randomIndex = random.randint(0, len(formattedQuestions) - 1)
     #print(formattedQuestions[randomIndex]['question'])
     return jsonify({
       'question': formattedQuestions[randomIndex]
