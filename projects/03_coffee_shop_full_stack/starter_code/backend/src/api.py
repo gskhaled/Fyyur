@@ -78,7 +78,7 @@ def post_drinks(payload):
         body = request.get_json()
         drinkTitle = body.get('title', None)
         drinkRecipe = body.get('recipe', None)
-        drink = Drink(title=drinkTitle, recipe=json.dumps(drinkRecipe))
+        drink = Drink(title=drinkTitle, recipe=drinkRecipe if type(drinkRecipe) == str else json.dumps(drinkRecipe))
         drink.insert()
         return jsonify({
             'success': True,
@@ -111,7 +111,7 @@ def patch_drinks(payload, id):
     if drinkTitle is not None:
         drink.title = drinkTitle
     if drinkRecipe is not None:
-        drink.recipe = json.dumps(drinkRecipe)
+        drink.recipe = drinkRecipe if type(drinkRecipe) == str else json.dumps(drinkRecipe)
     
     try:
         drink.update()
@@ -147,9 +147,6 @@ def delete_drink(payload, id):
         abort(404)
 
 ## Error Handling
-'''
-Example error handling for unprocessable entity
-'''
 @app.errorhandler(422)
 def unprocessable(error):
     return jsonify({
