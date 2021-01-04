@@ -3,9 +3,11 @@ from sqlalchemy import Column, String, Integer
 from flask_sqlalchemy import SQLAlchemy
 import json
 
-database_filename = "database.db"
-project_dir = os.path.dirname(os.path.abspath(__file__))
-database_path = "sqlite:///{}".format(os.path.join(project_dir, database_filename))
+DB_HOST = os.getenv('DB_HOST', '127.0.0.1:5432') 
+DB_USER = os.getenv('DB_USER', 'postgres') 
+DB_PASSWORD = os.getenv('DB_PASSWORD', '123456789') 
+DB_NAME = os.getenv('DB_NAME', 'coffee') 
+database_path = 'postgres://{}:{}@{}/{}'.format(DB_USER, DB_PASSWORD, DB_HOST, DB_NAME)
 
 db = SQLAlchemy()
 
@@ -48,7 +50,8 @@ class Drink(db.Model):
     '''
     def short(self):
         print(json.loads(self.recipe))
-        short_recipe = [{'color': r['color'], 'parts': r['parts']} for r in json.loads(self.recipe)]
+        r = json.loads(self.recipe)
+        short_recipe = [{'color': r['color'], 'parts': r['parts']}]
         return {
             'id': self.id,
             'title': self.title,
