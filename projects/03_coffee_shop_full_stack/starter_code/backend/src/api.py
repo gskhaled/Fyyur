@@ -19,16 +19,15 @@ CORS(app)
 # db_drop_and_create_all()
 
 ## ROUTES
-'''
-@TODO implement endpoint
+@app.route('/drinks', methods=['GET'])
+def get_drinks():
+    """
     GET /drinks
         it should be a public endpoint
         it should contain only the drink.short() data representation
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
-'''
-@app.route('/drinks', methods=['GET'])
-def get_drinks():
+    """
     try:
         drinks = Drink.query.all()
         formattedDrinks = [drink.short() for drink in drinks]
@@ -39,18 +38,16 @@ def get_drinks():
     except Exception:
         abort(404)
 
-
-'''
-@TODO implement endpoint
+@app.route('/drinks-detail', methods=['GET'])
+@requires_auth('get:drinks-detail')
+def get_drink_details(payload):
+    """
     GET /drinks-detail
         it should require the 'get:drinks-detail' permission
         it should contain the drink.long() data representation
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
-'''
-@app.route('/drinks-detail', methods=['GET'])
-@requires_auth('get:drinks-detail')
-def get_drink_details(payload):
+    """
     try:
         drinks = Drink.query.all()
         formattedDrinks = [drink.long() for drink in drinks]
@@ -61,19 +58,17 @@ def get_drink_details(payload):
     except Exception:
         abort(404)
 
-
-'''
-@TODO implement endpoint
+@app.route('/drinks', methods=['POST'])
+@requires_auth('post:drinks')
+def post_drinks(payload):
+    """
     POST /drinks
         it should create a new row in the drinks table
         it should require the 'post:drinks' permission
         it should contain the drink.long() data representation
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
-'''
-@app.route('/drinks', methods=['POST'])
-@requires_auth('post:drinks')
-def post_drinks(payload):
+    """
     try:
         body = request.get_json()
         drinkTitle = body.get('title', None)
@@ -87,8 +82,10 @@ def post_drinks(payload):
     except Exception:
         abort(422)
 
-'''
-@TODO implement endpoint
+@app.route('/drinks/<id>', methods=['PATCH'])
+@requires_auth('patch:drinks')
+def patch_drinks(payload, id):
+    """
     PATCH /drinks/<id>
         where <id> is the existing model id
         it should respond with a 404 error if <id> is not found
@@ -97,10 +94,7 @@ def post_drinks(payload):
         it should contain the drink.long() data representation
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
         or appropriate status code indicating reason for failure
-'''
-@app.route('/drinks/<id>', methods=['PATCH'])
-@requires_auth('patch:drinks')
-def patch_drinks(payload, id):
+    """
     drink = Drink.query.filter(Drink.id == id).one_or_none()
     if drink is None:
         abort(404)
@@ -121,10 +115,11 @@ def patch_drinks(payload, id):
         })
     except Exception:
         abort(422)
-    
 
-'''
-@TODO implement endpoint
+@app.route('/drinks/<id>', methods=['DELETE'])
+@requires_auth('delete:drinks')
+def delete_drink(payload, id):
+    """
     DELETE /drinks/<id>
         where <id> is the existing model id
         it should respond with a 404 error if <id> is not found
@@ -132,10 +127,7 @@ def patch_drinks(payload, id):
         it should require the 'delete:drinks' permission
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
-'''
-@app.route('/drinks/<id>', methods=['DELETE'])
-@requires_auth('delete:drinks')
-def delete_drink(payload, id):
+    """
     drinkToDelete = Drink.query.get(id)
     try:
         drinkToDelete.delete()
@@ -170,3 +162,11 @@ def unauthorized(error):
                     "error": 401,
                     "message": "unauthorized"
                     }), 401
+
+@app.errorhandler(AuthError)
+def authorizedError(e):
+    return jsonify({
+                    "success": False,
+                    "error": e.status_code if type(e.status_code) == int else 401,
+                    "message": e.error
+                    }), e.status_code if type(e.status_code) == int else 401 

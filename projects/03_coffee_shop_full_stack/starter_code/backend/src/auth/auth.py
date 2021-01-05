@@ -21,16 +21,14 @@ class AuthError(Exception):
 
 
 ## Auth Header
-
-'''
-@TODO implement get_token_auth_header() method
+def get_token_auth_header():
+    """
     it should attempt to get the header from the request
         it should raise an AuthError if no header is present
     it should attempt to split bearer and the token
         it should raise an AuthError if the header is malformed
     return the token part of the header
-'''
-def get_token_auth_header():
+    """
     if 'Authorization' not in request.headers:
         raise(AuthError('Authorization not available in request headers', 401))
 
@@ -44,8 +42,8 @@ def get_token_auth_header():
 
     return header_parts[1]
 
-'''
-@TODO implement check_permissions(permission, payload) method
+def check_permissions(permission, payload):
+    """
     @INPUTS
         permission: string permission (i.e. 'post:drink')
         payload: decoded jwt payload
@@ -54,8 +52,7 @@ def get_token_auth_header():
         !!NOTE check your RBAC settings in Auth0
     it should raise an AuthError if the requested permission string is not in the payload permissions array
     return true otherwise
-'''
-def check_permissions(permission, payload):
+    """
     if payload is None:
         raise(AuthError('Payload is empty', 401))
 
@@ -68,19 +65,20 @@ def check_permissions(permission, payload):
     return True
 
 '''
-@TODO implement verify_decode_jwt(token) method
+!!NOTE urlopen has a common certificate error described 
+here: https://stackoverflow.com/questions/50236117/scraping-ssl-certificate-verify-failed-error-for-http-en-wikipedia-org
+'''
+def verify_decode_jwt(token):
+    """
     @INPUTS
         token: a json web token (string)
 
-    it should be an Auth0 token with key id (kid)
-    it should verify the token using Auth0 /.well-known/jwks.json
-    it should decode the payload from the token
-    it should validate the claims
+    it should be an Auth0 token with key id (kid)  
+    it should verify the token using Auth0 /.well-known/jwks.json  
+    it should decode the payload from the token  
+    it should validate the claims  
     return the decoded payload
-
-    !!NOTE urlopen has a common certificate error described here: https://stackoverflow.com/questions/50236117/scraping-ssl-certificate-verify-failed-error-for-http-en-wikipedia-org
-'''
-def verify_decode_jwt(token):
+    """
     jsonurl = urlopen("https://"+AUTH0_DOMAIN+"/.well-known/jwks.json")
     jwks = json.loads(jsonurl.read())
     unverified_header = jwt.get_unverified_header(token)
@@ -109,17 +107,15 @@ def verify_decode_jwt(token):
     else:
         raise(AuthError('Payload instantiation failed.', 401))
 
-'''
-@TODO implement @requires_auth(permission) decorator method
+def requires_auth(permission=''):
+    """
     @INPUTS
         permission: string permission (i.e. 'post:drink')
-
-    it should use the get_token_auth_header method to get the token
-    it should use the verify_decode_jwt method to decode the jwt
-    it should use the check_permissions method validate claims and check the requested permission
-    return the decorator which passes the decoded payload to the decorated method
-'''
-def requires_auth(permission=''):
+    it should use the get_token_auth_header method to get the token  
+    it should use the verify_decode_jwt method to decode the jwt  
+    it should use the check_permissions method validate claims and check the requested permission  
+    return the decorator which passes the decoded payload to the decorated method  
+    """
     def requires_auth_decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
